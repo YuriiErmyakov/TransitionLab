@@ -1,4 +1,4 @@
-// Procedural SFX synthesizer for CutAlchemy.
+// Procedural SFX synthesizer for TransitionLab.
 // node make_sfx.mjs [outRoot]   -> <outRoot>/<Style>/sfx/<style>_NN.wav
 // Convention: the "hit" (cut point) of every sound is at exactly HIT = 0.5 s.
 import fs from "node:fs";

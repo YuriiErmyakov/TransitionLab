@@ -1,4 +1,4 @@
-# CutAlchemy
+# TransitionLab
 
 **Процедурные переходы для After Effects: каждый раз новые.** Поставьте плейхед на склейку, нажмите **GENERATE**, и скрипт соберёт переход из встроенных эффектов AE. Плагины и готовые паки не нужны. Каждый запуск берёт новый сид, поэтому варианты, палитры, траектории и тайминги всегда разные.
 
@@ -9,11 +9,11 @@
 [English below](#english)
 
 ## Установка
-1. Скачайте `CutAlchemy-x.y.z.zip` из [Releases](../../releases/latest) и распакуйте.
-2. **Быстро:** File → Scripts → Run Script File… → `CutAlchemy.jsx` (папка `assets` должна лежать рядом).
-3. **Докируемая панель:** скопируйте `CutAlchemy.jsx` и папку `assets` в
+1. Скачайте `TransitionLab-x.y.z.zip` из [Releases](../../releases/latest) и распакуйте.
+2. **Быстро:** File → Scripts → Run Script File… → `TransitionLab.jsx` (папка `assets` должна лежать рядом).
+3. **Докируемая панель:** скопируйте `TransitionLab.jsx` и папку `assets` в
    `C:\Program Files\Adobe\Adobe After Effects <версия>\Support Files\Scripts\ScriptUI Panels\`
-   (нужны права администратора), перезапустите AE → Window → CutAlchemy.jsx.
+   (нужны права администратора), перезапустите AE → Window → TransitionLab.jsx.
    Если панель не нашла ассеты, нажмите **Assets folder…** и укажите папку `assets`.
 
 ## Как пользоваться
@@ -25,10 +25,10 @@
 Ещё:
 - **All cuts**: переход на каждой склейке композиции.
 - **Remove at playhead**: удаляет переход под плейхедом целиком.
-- **Import**: импортирует SFX и ваши оверлеи стиля в бин `CutAlchemy/<стиль>` (Generate делает это сам, если забыли).
+- **Import**: импортирует SFX и ваши оверлеи стиля в бин `TransitionLab/<стиль>` (Generate делает это сам, если забыли).
 - Ctrl+Z отменяет генерацию одним шагом.
 
-Слои перехода называются `CA07 Film Flash | …`, у них один цвет метки, а в комментарии записано `CA:<номер>:<стиль>:<сид>`.
+Слои перехода называются `CA07 Film Flash | …`, у них один цвет метки, а в комментарии записано `TL:<номер>:<стиль>:<сид>`.
 
 ## 11 стилей
 | Стиль | Что делает |
@@ -53,19 +53,19 @@
 
 ## Для автоматизации
 ```js
-$.global.CA_HEADLESS = true; $.evalFile(File("<path>/CutAlchemy.jsx"));
-CA.generate({ style: "VHS", duration: "medium", seed: 123 });   // style: id или "random"
-CA.generateAll({ style: "random" });  CA.removeAt();
+$.global.TL_HEADLESS = true; $.evalFile(File("<path>/TransitionLab.jsx"));
+TL.generate({ style: "VHS", duration: "medium", seed: 123 });   // style: id или "random"
+TL.generateAll({ style: "random" });  TL.removeAt();
 ```
-`test/run_batch.jsx` и `test/sheet.sh` делают контактные листы кадров вокруг склейки для каждого стиля (нужна своя тестовая композиция `CA test` с двумя клипами).
+`test/run_batch.jsx` и `test/sheet.sh` делают контактные листы кадров вокруг склейки для каждого стиля (нужна своя тестовая композиция `TL test` с двумя клипами).
 
 ---
 
 ## English
 
-**CutAlchemy** is a free, open-source After Effects script that builds procedural transitions at the cut under the playhead. It uses only native AE effects, with no third-party plugins or stock packs. Every run picks a new seed, so no two transitions are the same.
+**TransitionLab** is a free, open-source After Effects script that builds procedural transitions at the cut under the playhead. It uses only native AE effects, with no third-party plugins or stock packs. Every run picks a new seed, so no two transitions are the same.
 
-**Install:** download the zip from [Releases](../../releases/latest), then either run `CutAlchemy.jsx` via File → Scripts → Run Script File (keep the `assets` folder next to it), or copy the script and `assets` into `Support Files/Scripts/ScriptUI Panels/` and open Window → CutAlchemy.jsx.
+**Install:** download the zip from [Releases](../../releases/latest), then either run `TransitionLab.jsx` via File → Scripts → Run Script File (keep the `assets` folder next to it), or copy the script and `assets` into `Support Files/Scripts/ScriptUI Panels/` and open Window → TransitionLab.jsx.
 
 **Use:** put the playhead on a cut, pick a style (or Random) and a duration, press **GENERATE**. **All cuts** fills every cut in the comp; **Remove at playhead** deletes a transition; Ctrl+Z undoes a generation in one step. Aspect ratio (16:9, 9:16, 1:1) is detected automatically.
 

@@ -1,17 +1,17 @@
-/*  CutAlchemy for After Effects  -  v1.0
+/*  TransitionLab for After Effects  -  v1.0
     Procedural, never-the-same transitions at the playhead cut. Built only on native AE effects.
 
     Install : copy this file AND the "assets" folder next to it into
-              <AE>/Support Files/Scripts/ScriptUI Panels/  (then Window > CutAlchemy.jsx)
+              <AE>/Support Files/Scripts/ScriptUI Panels/  (then Window > TransitionLab.jsx)
               or run once via File > Scripts > Run Script File.
-    Headless: $.global.CA_HEADLESS = true; $.evalFile(file);
-              CA.generate({ style: "FilmFlash", duration: "medium", seed: 123, sfx: true });
+    Headless: $.global.TL_HEADLESS = true; $.evalFile(file);
+              TL.generate({ style: "FilmFlash", duration: "medium", seed: 123, sfx: true });
 */
 (function (thisObj) {
 
-var CA = $.global.CA = {};
-CA.VERSION = "1.0";
-var SETTINGS = "CutAlchemy";
+var TL = $.global.TL = {};
+TL.VERSION = "1.0";
+var SETTINGS = "TransitionLab";
 var HIT = 0.5;              // every SFX has its hit at 0.5 s
 var SCRIPT_FILE = File($.fileName);
 
@@ -194,18 +194,18 @@ function findFolder(name, parent) {
     if (parent) f.parentFolder = parent;
     return f;
 }
-function rootBin() { return findFolder("CutAlchemy", null); }
+function rootBin() { return findFolder("TransitionLab", null); }
 function bin(name) { return findFolder(name, rootBin()); }
 
 function assetsFolder() {
     var saved = getSetting("assetsPath", "");
     if (saved && Folder(saved).exists) return Folder(saved);
-    var cands = [SCRIPT_FILE.parent.fsName + "/assets", SCRIPT_FILE.parent.fsName + "/CutAlchemy/assets"];
+    var cands = [SCRIPT_FILE.parent.fsName + "/assets", SCRIPT_FILE.parent.fsName + "/TransitionLab/assets"];
     for (var i = 0; i < cands.length; i++) if (Folder(cands[i]).exists) return Folder(cands[i]);
     return null;
 }
 function assetItems(styleId, kind) {
-    var tag = "CAASSET:" + styleId + ":" + kind, r = [];
+    var tag = "TLASSET:" + styleId + ":" + kind, r = [];
     for (var i = 1; i <= app.project.numItems; i++) {
         var it = app.project.item(i);
         if (it instanceof FootageItem && it.comment === tag) r.push(it);
@@ -214,7 +214,7 @@ function assetItems(styleId, kind) {
 }
 function isImported(styleId) { return assetItems(styleId, "sfx").length > 0 || assetItems(styleId, "overlay").length > 0; }
 
-CA.importStyle = function (styleId) {
+TL.importStyle = function (styleId) {
     var root = assetsFolder();
     if (!root) return "assets folder not found";
     var st = styleById(styleId); if (!st) return "unknown style";
@@ -223,7 +223,7 @@ CA.importStyle = function (styleId) {
     for (var k = 0; k < kinds.length; k++) {
         var fol = Folder(root.fsName + "/" + styleId + "/" + kinds[k][0]);
         if (!fol.exists) continue;
-        var tag = "CAASSET:" + styleId + ":" + (kinds[k][0] === "sfx" ? "sfx" : "overlay");
+        var tag = "TLASSET:" + styleId + ":" + (kinds[k][0] === "sfx" ? "sfx" : "overlay");
         var have = assetItems(styleId, kinds[k][0] === "sfx" ? "sfx" : "overlay"), haveMap = {};
         for (var h = 0; h < have.length; h++) { try { haveMap[have[h].mainSource.file.fsName] = 1; } catch (e) {} }
         var files = fol.getFiles(function (f) { return f instanceof File && kinds[k][1].test(f.name); });
@@ -240,7 +240,7 @@ CA.importStyle = function (styleId) {
 };
 
 // ------------------------------------------------------------------ cut detection
-function isTG(L) { return L.comment && L.comment.indexOf("CA:") === 0; }
+function isTG(L) { return L.comment && L.comment.indexOf("TL:") === 0; }
 function isClip(L) {
     if (!(L instanceof AVLayer)) return L instanceof TextLayer || L instanceof ShapeLayer ? !isTG(L) && L.enabled : false;
     return L.enabled && L.hasVideo && !L.adjustmentLayer && !L.guideLayer && !L.nullLayer && !isTG(L);
@@ -292,7 +292,7 @@ function allCuts(comp) {
 // ------------------------------------------------------------------ context
 function nextIndex(comp) {
     var mx = 0;
-    for (var i = 1; i <= comp.numLayers; i++) { var m = /^CA:(\d+)/.exec(comp.layer(i).comment || ""); if (m) mx = Math.max(mx, parseInt(m[1], 10)); }
+    for (var i = 1; i <= comp.numLayers; i++) { var m = /^TL:(\d+)/.exec(comp.layer(i).comment || ""); if (m) mx = Math.max(mx, parseInt(m[1], 10)); }
     return mx + 1;
 }
 
@@ -309,7 +309,7 @@ function Ctx(comp, cut, style, opts) {
     c.D = (DUR[opts.duration] || DUR.medium) * c.R.f(0.85, 1.2);
     c.opts = opts; c.style = style;
     c.uid = nextIndex(comp);
-    c.tag = "CA" + pad2(c.uid) + " " + style.name;
+    c.tag = "TL" + pad2(c.uid) + " " + style.name;
     c.label = (c.uid % 15) + 1;
     c.last = null; c.layers = []; c.notes = [];
 }
@@ -322,7 +322,7 @@ Ctx.prototype.span = function (L, tIn, tOut) {
 Ctx.prototype.place = function (L, name, tIn, tOut, o) {
     o = o || {};
     L.name = this.tag + " | " + name;
-    L.comment = "CA:" + this.uid + ":" + this.style.id + ":" + this.seed;
+    L.comment = "TL:" + this.uid + ":" + this.style.id + ":" + this.seed;
     L.label = this.label;
     if (o.below) L.moveAfter(o.below);
     else if (this.last) L.moveBefore(this.last);
@@ -409,7 +409,7 @@ Ctx.prototype.sfx = function () {
     var c = this;
     if (!c.opts.sfx) return;
     var items = assetItems(c.style.id, "sfx");
-    if (!items.length) { CA.importStyle(c.style.id); items = assetItems(c.style.id, "sfx"); }
+    if (!items.length) { TL.importStyle(c.style.id); items = assetItems(c.style.id, "sfx"); }
     if (!items.length) return;
     var lastKey = "lastSfx_" + c.style.id, last = parseInt(getSetting(lastKey, "-1"), 10), k = c.R.i(0, items.length - 1);
     if (items.length > 1 && k === last) k = (k + 1 + c.R.i(0, items.length - 2)) % items.length;
@@ -975,8 +975,8 @@ GEN.PhotoMatchCut = function (c) {
 };
 
 // ================================================================== generate
-CA.styles = STYLES;
-CA.generateAt = function (comp, cut, styleId, opts) {
+TL.styles = STYLES;
+TL.generateAt = function (comp, cut, styleId, opts) {
     var st = styleById(styleId);
     if (!st) throw new Error("Unknown style " + styleId);
     var c = new Ctx(comp, cut, st, opts);
@@ -985,7 +985,7 @@ CA.generateAt = function (comp, cut, styleId, opts) {
     c.sfx();
     return c;
 };
-CA.generate = function (opts) {
+TL.generate = function (opts) {
     opts = opts || {};
     var comp = opts.comp || app.project.activeItem;
     if (!(comp instanceof CompItem)) throw new Error("Open a composition and put the playhead on a cut");
@@ -995,44 +995,44 @@ CA.generate = function (opts) {
     if (!styleId || styleId === "random") styleId = STYLES[Math.floor(Math.random() * STYLES.length)].id;
     var t = (opts.time != null) ? opts.time : comp.time;
     var cut = findCut(comp, t, opts.snap != null ? opts.snap : 1.0);
-    app.beginUndoGroup("CutAlchemy");
+    app.beginUndoGroup("TransitionLab");
     try {
-        var c = CA.generateAt(comp, cut, styleId, opts);
+        var c = TL.generateAt(comp, cut, styleId, opts);
     } finally { app.endUndoGroup(); }
     var fmt = comp.width > comp.height * 1.05 ? "Horizontal" : (comp.height > comp.width * 1.05 ? "Vertical" : "Square");
     return c.tag + " @ " + cut.time.toFixed(2) + "s  [" + fmt + ", seed " + c.seed + "]" + (cut.pair ? "" : " (no clean cut found)") + "\n" + c.notes.join(", ");
 };
-CA.generateAll = function (opts) {
+TL.generateAll = function (opts) {
     opts = opts || {};
     var comp = opts.comp || app.project.activeItem;
     if (!(comp instanceof CompItem)) throw new Error("Open a composition");
     if (opts.sfx == null) opts.sfx = true;
     if (opts.overlays == null) opts.overlays = true;
     var cuts = allCuts(comp), n = 0;
-    app.beginUndoGroup("CutAlchemy - all cuts");
+    app.beginUndoGroup("TransitionLab - all cuts");
     try {
         for (var i = 0; i < cuts.length; i++) {
             var sid = (opts.style && opts.style !== "random") ? opts.style : STYLES[Math.floor(Math.random() * STYLES.length)].id;
             var o = {}; for (var k in opts) if (opts.hasOwnProperty(k)) o[k] = opts[k];
             o.seed = null;
-            CA.generateAt(comp, findCut(comp, cuts[i], comp.frameDuration), sid, o); n++;
+            TL.generateAt(comp, findCut(comp, cuts[i], comp.frameDuration), sid, o); n++;
         }
     } finally { app.endUndoGroup(); }
     return n + " transitions generated";
 };
-CA.removeAt = function (comp, t) {
+TL.removeAt = function (comp, t) {
     comp = comp || app.project.activeItem;
     if (!(comp instanceof CompItem)) return 0;
     t = (t != null) ? t : comp.time;
     var uids = {}, i, L, m;
     for (i = 1; i <= comp.numLayers; i++) {
-        L = comp.layer(i); m = /^CA:(\d+)/.exec(L.comment || "");
+        L = comp.layer(i); m = /^TL:(\d+)/.exec(L.comment || "");
         if (m && L.inPoint <= t + 1e-6 && L.outPoint >= t - 1e-6) uids[m[1]] = 1;
     }
     var n = 0;
-    app.beginUndoGroup("CutAlchemy - remove");
+    app.beginUndoGroup("TransitionLab - remove");
     for (i = comp.numLayers; i >= 1; i--) {
-        L = comp.layer(i); m = /^CA:(\d+)/.exec(L.comment || "");
+        L = comp.layer(i); m = /^TL:(\d+)/.exec(L.comment || "");
         if (m && uids[m[1]]) { L.remove(); n++; }
     }
     app.endUndoGroup();
@@ -1041,10 +1041,10 @@ CA.removeAt = function (comp, t) {
 
 // ================================================================== UI
 function buildUI(thisObj) {
-    var w = (thisObj instanceof Panel) ? thisObj : new Window("palette", "CutAlchemy", undefined, { resizeable: true });
+    var w = (thisObj instanceof Panel) ? thisObj : new Window("palette", "TransitionLab", undefined, { resizeable: true });
     w.orientation = "column"; w.alignChildren = ["fill", "top"]; w.spacing = 6; w.margins = 10;
 
-    var hdr = w.add("statictext", undefined, "CUTALCHEMY  v" + CA.VERSION);
+    var hdr = w.add("statictext", undefined, "TRANSITIONLAB  v" + TL.VERSION);
     try { hdr.graphics.font = ScriptUI.newFont(hdr.graphics.font.name, "BOLD", 13); } catch (e) {}
     var fmt = w.add("statictext", undefined, "Format: auto (from active comp)");
 
@@ -1068,8 +1068,8 @@ function buildUI(thisObj) {
             rb.value = (st.id === cur);
             rb.onClick = function () { for (var j = 0; j < rows.length; j++) rows[j].rb.value = (rows[j].id === st.id); setSetting("style", st.id); };
             bt.onClick = function () {
-                app.beginUndoGroup("CA import");
-                var r = CA.importStyle(st.id);
+                app.beginUndoGroup("TL import");
+                var r = TL.importStyle(st.id);
                 app.endUndoGroup();
                 status.text = (typeof r === "number") ? st.name + ": " + r + " file(s) imported" : st.name + ": " + r;
                 refreshImport();
@@ -1101,11 +1101,11 @@ function buildUI(thisObj) {
         return { duration: d, style: cbR.value ? "random" : s, sfx: cbS.value, overlays: cbO.value };
     }
     function comp() { var c = app.project.activeItem; if (!(c instanceof CompItem)) { status.text = "Open a composition first."; return null; } fmt.text = "Format: " + (c.width > c.height * 1.05 ? "Horizontal" : (c.height > c.width * 1.05 ? "Vertical" : "Square")) + "  " + c.width + "x" + c.height; return c; }
-    bGen.onClick = function () { var c = comp(); if (!c) return; try { status.text = CA.generate(opts()); } catch (e) { status.text = "Error: " + e.toString() + (e.line ? " (line " + e.line + ")" : ""); } refreshImport(); };
-    bAll.onClick = function () { var c = comp(); if (!c) return; try { status.text = CA.generateAll(opts()); } catch (e) { status.text = "Error: " + e.toString() + (e.line ? " (line " + e.line + ")" : ""); } refreshImport(); };
-    bDel.onClick = function () { var c = comp(); if (!c) return; status.text = CA.removeAt(c) + " layer(s) removed"; };
-    bAss.onClick = function () { var f = Folder.selectDialog("Select the CutAlchemy 'assets' folder"); if (f) { setSetting("assetsPath", f.fsName); status.text = "Assets: " + f.fsName; } };
-    bImpAll.onClick = function () { app.beginUndoGroup("CA import all"); var n = 0; for (var j = 0; j < STYLES.length; j++) { var r = CA.importStyle(STYLES[j].id); if (typeof r === "number") n += r; } app.endUndoGroup(); status.text = n + " file(s) imported"; refreshImport(); };
+    bGen.onClick = function () { var c = comp(); if (!c) return; try { status.text = TL.generate(opts()); } catch (e) { status.text = "Error: " + e.toString() + (e.line ? " (line " + e.line + ")" : ""); } refreshImport(); };
+    bAll.onClick = function () { var c = comp(); if (!c) return; try { status.text = TL.generateAll(opts()); } catch (e) { status.text = "Error: " + e.toString() + (e.line ? " (line " + e.line + ")" : ""); } refreshImport(); };
+    bDel.onClick = function () { var c = comp(); if (!c) return; status.text = TL.removeAt(c) + " layer(s) removed"; };
+    bAss.onClick = function () { var f = Folder.selectDialog("Select the TransitionLab 'assets' folder"); if (f) { setSetting("assetsPath", f.fsName); status.text = "Assets: " + f.fsName; } };
+    bImpAll.onClick = function () { app.beginUndoGroup("TL import all"); var n = 0; for (var j = 0; j < STYLES.length; j++) { var r = TL.importStyle(STYLES[j].id); if (typeof r === "number") n += r; } app.endUndoGroup(); status.text = n + " file(s) imported"; refreshImport(); };
 
     if (!assetsFolder()) status.text = "Assets folder not found - click 'Assets folder...'";
     refreshImport();
@@ -1115,6 +1115,6 @@ function buildUI(thisObj) {
     return w;
 }
 
-if (!$.global.CA_HEADLESS) buildUI(thisObj);
+if (!$.global.TL_HEADLESS) buildUI(thisObj);
 
 })(this);

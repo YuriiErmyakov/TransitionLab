@@ -1,15 +1,15 @@
-/*  Builds the Premiere Pro overlay pack with the AE CutAlchemy engine.
+/*  Builds the Premiere Pro overlay pack with the AE TransitionLab engine.
     $.global.PACK = { styles:[...], orients:["H","V"], perDur:2, root:"<...>/assets/PR", start:true, only:null }
     For every style/orientation/duration it generates a transition at 1.2 s on placeholder clips,
     keeps only overlay layers and queues a render. Writes <root>/manifest.json.
 */
 (function () {
     var P = $.global.PACK || {};
-    $.global.CA_HEADLESS = true;
-    $.evalFile(File("C:/Все файлы/CutAlchemy/CutAlchemy.jsx"));
+    $.global.TL_HEADLESS = true;
+    $.evalFile(File("C:/Все файлы/TransitionLab/TransitionLab.jsx"));
 
     var CUT = 1.2, LEN = 2.4, FPS = 25;
-    var ROOT = Folder(P.root || "C:/Все файлы/CutAlchemy/assets/PR");
+    var ROOT = Folder(P.root || "C:/Все файлы/TransitionLab/assets/PR");
     var KIND = { FilmFlash: "screen", OpticalGlare: "screen", LensFlares: "screen", PunchHole: "screen", Horror: "screen", Paper: "alpha", VHS: "screen", Scrapbook: "alpha" };
     var SIZE = { H: [1920, 1080], V: [1080, 1920] };
     var DURS = ["short", "medium", "long"];
@@ -21,7 +21,7 @@
         for (var i = 1; i <= app.project.numItems; i++) { var it = app.project.item(i); if (it instanceof FolderItem && it.name === name && it.parentFolder === parent) return it; }
         var f = app.project.items.addFolder(name); f.parentFolder = parent; return f;
     }
-    var packBin = folder("CA PR Pack", app.project.rootFolder);
+    var packBin = folder("TL PR Pack", app.project.rootFolder);
     var phSolids = [];
     var manifest = [], queued = 0, seed = P.seed || 7000;
 
@@ -39,7 +39,7 @@
                     var B = comp.layers.addSolid([0.4, 0.4, 0.4], "ph B", W, H, 1, LEN); B.inPoint = CUT; B.outPoint = LEN;
                     var srcA = A.source, srcB = B.source;
                     seed += 17;
-                    CA.generateAt(comp, { time: CUT, A: A, B: B, pair: true }, st, { seed: seed, duration: DURS[d], sfx: false, overlays: false });
+                    TL.generateAt(comp, { time: CUT, A: A, B: B, pair: true }, st, { seed: seed, duration: DURS[d], sfx: false, overlays: false });
                     // strip everything that is not a pure overlay
                     for (var i = comp.numLayers; i >= 1; i--) {
                         var L = comp.layer(i), kill = false;
