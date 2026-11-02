@@ -1,0 +1,76 @@
+# CutAlchemy
+
+**Процедурные переходы для After Effects: каждый раз новые.** Поставьте плейхед на склейку, нажмите **GENERATE**, и скрипт соберёт переход из встроенных эффектов AE. Плагины и готовые паки не нужны. Каждый запуск берёт новый сид, поэтому варианты, палитры, траектории и тайминги всегда разные.
+
+Бесплатно, открытый код (MIT). Автор: Yurii Ermyakov.
+
+> Независимый проект, не связан с Adobe. After Effects является товарным знаком Adobe.
+
+[English below](#english)
+
+## Установка
+1. Скачайте `CutAlchemy-x.y.z.zip` из [Releases](../../releases/latest) и распакуйте.
+2. **Быстро:** File → Scripts → Run Script File… → `CutAlchemy.jsx` (папка `assets` должна лежать рядом).
+3. **Докируемая панель:** скопируйте `CutAlchemy.jsx` и папку `assets` в
+   `C:\Program Files\Adobe\Adobe After Effects <версия>\Support Files\Scripts\ScriptUI Panels\`
+   (нужны права администратора), перезапустите AE → Window → CutAlchemy.jsx.
+   Если панель не нашла ассеты, нажмите **Assets folder…** и укажите папку `assets`.
+
+## Как пользоваться
+1. Формат определяется сам по композиции (16:9 / 9:16 / 1:1).
+2. **Duration**: Short / Medium / Long, относительный темп перехода.
+3. Выберите стиль или поставьте галочку **Random style**.
+4. Поставьте плейхед на склейку двух клипов и нажмите **GENERATE**. Скрипт сам находит ближайшую склейку в пределах ±1 с.
+
+Ещё:
+- **All cuts**: переход на каждой склейке композиции.
+- **Remove at playhead**: удаляет переход под плейхедом целиком.
+- **Import**: импортирует SFX и ваши оверлеи стиля в бин `CutAlchemy/<стиль>` (Generate делает это сам, если забыли).
+- Ctrl+Z отменяет генерацию одним шагом.
+
+Слои перехода называются `CA07 Film Flash | …`, у них один цвет метки, а в комментарии записано `CA:<номер>:<стиль>:<сид>`.
+
+## 11 стилей
+| Стиль | Что делает |
+|---|---|
+| Photo Match Cut | кадр A становится фотографией, сверху падает фото B (полароид, стопка снимков), вспышка, B раскрывается в кадр |
+| Scrapbook | стоп-моушн коллаж 8–12 fps: вырезки из A и B, рваные края, скотч, цветные обрывки |
+| Aesthetic Film | прокрутка плёнки с перфорацией, тёплый тон, зерно, засветка |
+| Punch Hole | царапины, пыль, cue-метка, прыжок кадра, кадр A прожигается дырами до B |
+| Optical Glare | цветные пятна света, анаморфные полосы, bloom |
+| Paper | лист (стопка или разрыв пополам) пролетает с рваными краями и тенью |
+| Horror | тряска, чёрные и инвертированные кадры, хроматика, статический шум |
+| VHS | срыв кадра, горизонтальные разрывы, трекинг-шум, сканлайны, OSD «PLAY ►» |
+| Film Flash | огненный прожиг, засветка, белый кадр, тряска |
+| Lens Flares | 1–2 блика пролетают через кадр, анаморфная полоса, whiteout |
+| Slide Projector | слайд уезжает, новый въезжает с перефокусом, дрожанием и виньеткой |
+
+## Свои ассеты
+- `assets/<Стиль>/sfx/*.wav`: удар (точка склейки) должен быть ровно на **0,5 с**.
+- `assets/<Стиль>/overlays/*.mov|mp4|png`: с вероятностью 60% кладётся по центру склейки в режиме Screen.
+
+Встроенные звуки сгенерированы процедурно, без сэмплов: `node tools/make_sfx.mjs` (по 4 варианта на стиль).
+
+## Для автоматизации
+```js
+$.global.CA_HEADLESS = true; $.evalFile(File("<path>/CutAlchemy.jsx"));
+CA.generate({ style: "VHS", duration: "medium", seed: 123 });   // style: id или "random"
+CA.generateAll({ style: "random" });  CA.removeAt();
+```
+`test/run_batch.jsx` и `test/sheet.sh` делают контактные листы кадров вокруг склейки для каждого стиля (нужна своя тестовая композиция `CA test` с двумя клипами).
+
+---
+
+## English
+
+**CutAlchemy** is a free, open-source After Effects script that builds procedural transitions at the cut under the playhead. It uses only native AE effects, with no third-party plugins or stock packs. Every run picks a new seed, so no two transitions are the same.
+
+**Install:** download the zip from [Releases](../../releases/latest), then either run `CutAlchemy.jsx` via File → Scripts → Run Script File (keep the `assets` folder next to it), or copy the script and `assets` into `Support Files/Scripts/ScriptUI Panels/` and open Window → CutAlchemy.jsx.
+
+**Use:** put the playhead on a cut, pick a style (or Random) and a duration, press **GENERATE**. **All cuts** fills every cut in the comp; **Remove at playhead** deletes a transition; Ctrl+Z undoes a generation in one step. Aspect ratio (16:9, 9:16, 1:1) is detected automatically.
+
+**11 styles:** Photo Match Cut, Scrapbook, Aesthetic Film, Punch Hole, Optical Glare, Paper, Horror, VHS, Film Flash, Lens Flares, Slide Projector.
+
+**Custom assets:** put WAVs with the hit at exactly 0.5 s in `assets/<Style>/sfx/` and overlays in `assets/<Style>/overlays/`. Built-in SFX are synthesized procedurally (`node tools/make_sfx.mjs`).
+
+Not affiliated with Adobe. License: MIT.

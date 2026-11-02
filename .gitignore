@@ -1,0 +1,7 @@
+dist/
+*.aep
+*Auto-Save/
+*.aep Logs/
+frames/
+*.png
+assets/PR/
