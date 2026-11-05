@@ -2,11 +2,11 @@
 
 <img src="docs/panel.png" alt="TransitionLab panel in After Effects" width="295" align="right">
 
-**Процедурные переходы для After Effects: каждый раз новые.** Поставьте плейхед на склейку, нажмите **GENERATE**, и скрипт соберёт переход из встроенных эффектов AE. Плагины и готовые паки не нужны. Каждый запуск берёт новый сид, поэтому варианты, палитры, траектории и тайминги всегда разные.
+**Процедурные переходы для After Effects и EffectCraft: каждый раз новые.** Поставьте плейхед на склейку, нажмите **GENERATE**, и скрипт соберёт переход из встроенных эффектов AE. Плагины и готовые паки не нужны. Каждый запуск берёт новый сид, поэтому варианты, палитры, траектории и тайминги всегда разные.
 
 Бесплатно, открытый код (MIT). Автор: Yurii Ermyakov.
 
-> Независимый проект, не связан с Adobe. After Effects является товарным знаком Adobe.
+> Независимый проект, не связан с Adobe и ArtCraft. After Effects и EffectCraft — товарные знаки их владельцев.
 
 [English below](#english)
 
@@ -17,6 +17,23 @@
    `C:\Program Files\Adobe\Adobe After Effects <версия>\Support Files\Scripts\ScriptUI Panels\`
    (нужны права администратора), перезапустите AE → Window → TransitionLab.jsx.
    Если панель не нашла ассеты, нажмите **Assets folder…** и укажите папку `assets`.
+
+## EffectCraft
+
+[EffectCraft](https://getartcraft.com/apps/effectcraft) — бесплатный композитор с открытым кодом, похожий на After Effects.
+Для него есть отдельная сборка, AE-версию она не затрагивает.
+
+1. Скачайте `TransitionLab-EffectCraft-x.y.z.zip` из [Releases](../../releases/latest) и распакуйте.
+2. Запустите `install.ps1` (правый клик > «Выполнить с помощью PowerShell» или
+   `powershell -ExecutionPolicy Bypass -File install.ps1`). Он ставит панель и звуки в
+   `%APPDATA%\EffectCraft\Scripts\ScriptUI Panels\TransitionLab\`.
+3. Перезапустите EffectCraft: *Window > TransitionLab > TransitionLab.jsx*.
+
+Работает так же: 11 стилей, Generate, All cuts, Remove at playhead, звуки. Внутри EffectCraft нумерует параметры
+эффектов иначе, чем After Effects, поэтому `effectcraft/TransitionLab-EC.jsx` собирается из основного скрипта командой
+`node tools/build_ec.mjs` с переводом номеров; отличается и внешний вид шума Fractal Noise, так что огонь в Film Flash
+выглядит чуть иначе. Свои оверлеи и звуки EffectCraft увидит, только если включить
+*Preferences > Scripting & Expressions > Allow Scripts to Write Files and Access Network*; встроенные работают без этого.
 
 ## Как пользоваться
 1. Формат определяется сам по композиции (16:9 / 9:16 / 1:1).
@@ -53,6 +70,11 @@
 
 Встроенные звуки сгенерированы процедурно, без сэмплов: `node tools/make_sfx.mjs` (по 4 варианта на стиль).
 
+## Сторонние плагины
+
+Если установлены CS Vignette или Mettle SkyBox Chromatic Aberration, Horror и Slide Projector используют их.
+Без них (с версии 1.0.1) виньетка делается обычным чёрным солидом с маской, а хроматика пропускается.
+
 ## Для автоматизации
 ```js
 $.global.TL_HEADLESS = true; $.evalFile(File("<path>/TransitionLab.jsx"));
@@ -75,4 +97,6 @@ TL.generateAll({ style: "random" });  TL.removeAt();
 
 **Custom assets:** put WAVs with the hit at exactly 0.5 s in `assets/<Style>/sfx/` and overlays in `assets/<Style>/overlays/`. Built-in SFX are synthesized procedurally (`node tools/make_sfx.mjs`).
 
-Not affiliated with Adobe. License: MIT.
+**EffectCraft:** a separate build for [EffectCraft](https://getartcraft.com/apps/effectcraft), the free open-source compositor. Download `TransitionLab-EffectCraft-x.y.z.zip`, run `install.ps1`, restart EffectCraft and open *Window > TransitionLab > TransitionLab.jsx*. Same 11 styles; the After Effects version is not affected.
+
+Not affiliated with Adobe or ArtCraft. License: MIT.

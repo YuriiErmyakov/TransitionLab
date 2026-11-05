@@ -1,4 +1,4 @@
-/*  TransitionLab for After Effects  -  v1.0
+/*  TransitionLab for After Effects  -  v1.0.1
     Procedural, never-the-same transitions at the playhead cut. Built only on native AE effects.
 
     Install : copy this file AND the "assets" folder next to it into
@@ -10,7 +10,7 @@
 (function (thisObj) {
 
 var TL = $.global.TL = {};
-TL.VERSION = "1.0";
+TL.VERSION = "1.0.1";
 var SETTINGS = "TransitionLab";
 var HIT = 0.5;              // every SFX has its hit at 0.5 s
 var SCRIPT_FILE = File($.fileName);
@@ -108,6 +108,15 @@ function fx(layer, mn, vals) {
     return e;
 }
 function tryFx(layer, mn, vals) { try { return fx(layer, mn, vals); } catch (e) { return null; } }
+// CS Vignette when installed, else a black solid with a feathered subtract mask; property(1) drives the amount
+function vignette(c, A, soft) {
+    var e = tryFx(A, "CS Vignette", { 2: soft });
+    if (e) return e;
+    var L = c.solid("vignette", [0, 0, 0], A.inPoint, A.outPoint);
+    addMask(L, ellipseShape(c.W / 2, c.H / 2, c.W * 0.62, c.H * 0.62), { feather: Math.min(c.W, c.H) * soft / 90, mode: MaskMode.SUBTRACT });
+    L.opacity.setValue(0);
+    return { property: function () { return L.opacity; } };
+}
 
 function maskShape(pts, inT, outT) { var s = new Shape(); s.vertices = pts; if (inT) s.inTangents = inT; if (outT) s.outTangents = outT; s.closed = true; return s; }
 function addMask(layer, shape, o) {
@@ -713,7 +722,7 @@ GEN.Horror = function (c) {
     var tc = tint ? R.pick([[[0.08, 0, 0], [1, 0.8, 0.75]], [[0, 0.06, 0.03], [0.8, 1, 0.85]], [[0, 0.02, 0.08], [0.75, 0.85, 1]]]) : [[0, 0, 0], [1, 1, 1]];
     var hs = fx(A, "ADBE Tint", { 1: tc[0], 2: tc[1] });
     anim(hs.property(3), [[t0, 0, "in"], [c.cut, tint ? R.f(55, 85) : R.f(50, 95), "out"], [t1, 0]]);
-    var vg = fx(A, "CS Vignette", { 2: 45 });
+    var vg = vignette(c, A, 45);
     anim(vg.property(1), [[t0, 0, "in"], [c.cut, 100, "out"], [t1, 0]]);
     var nz = fx(A, "ADBE Noise", { 2: 0 });
     anim(nz.property(1), [[t0, 0, "in"], [c.cut, R.f(8, 22), "out"], [t1, 0]]);
@@ -750,7 +759,7 @@ GEN.SlideProjector = function (c) {
     var ex = fx(A, "ADBE Exposure2");
     anim(ex.property(3), [[t0, 0, "io"], [c.cut, -R.f(0.1, 0.4), "io"], [t1, 0]]);
     ex.property(3).expression = "seedRandom(Math.floor(time/thisComp.frameDuration)+1,true); value+random(-0.08,0.08)";
-    var vg = fx(A, "CS Vignette", { 2: 40 });
+    var vg = vignette(c, A, 40);
     anim(vg.property(1), [[t0, 0, "io"], [c.cut, R.f(40, 80), "io"], [t1, 0]]);
     c.note("dir " + dir.join(","));
 };
