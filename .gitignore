@@ -5,3 +5,4 @@ dist/
 frames/
 *.png
 assets/PR/
+!docs/*.png
